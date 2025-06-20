@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, MoreVertical, Loader } from 'lucide-react';
-import { fetchWithAuth, API_BASE_URL } from '../utils/api';
+import { fetchWithAuth } from '../utils/api';
 
 const STATUS_OPTIONS = ['pending', 'approved', 'rejected'];
 

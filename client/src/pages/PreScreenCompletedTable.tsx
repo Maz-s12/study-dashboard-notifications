@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ClipboardCheck, MoreVertical, Loader, ChevronDown, ChevronUp } from 'lucide-react';
-import { fetchWithAuth, API_BASE_URL } from '../utils/api';
+import { ClipboardCheck, Loader, ChevronDown, ChevronUp } from 'lucide-react';
+import { fetchWithAuth } from '../utils/api';
 
 const STATUS_OPTIONS = ['pending', 'approved', 'rejected'];
 
@@ -71,13 +71,6 @@ const PreScreenCompletedTable: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, notification: Notification) => {
-    event.preventDefault();
-    event.stopPropagation();
-    const rect = event.currentTarget.getBoundingClientRect();
-    setMenuState({ isOpen: true, position: { x: rect.right, y: rect.bottom }, notification });
   };
 
   const handleMenuClose = () => {

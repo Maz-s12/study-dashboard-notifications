@@ -70,12 +70,6 @@ const BookingScheduledTable: React.FC = () => {
     }
   };
 
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, notification: Notification) => {
-    event.preventDefault();
-    event.stopPropagation();
-    const rect = event.currentTarget.getBoundingClientRect();
-    setMenuState({ isOpen: true, position: { x: rect.right, y: rect.bottom }, notification });
-  };
   const handleMenuClose = () => setMenuState({ isOpen: false, position: { x: 0, y: 0 }, notification: null });
 
   const handleApprove = async () => {
