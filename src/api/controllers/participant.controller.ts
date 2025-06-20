@@ -211,23 +211,57 @@ export async function bookParticipant({ startTime, endTime, email, body }: SendB
   // Placeholder for survey link
   const surveyLink = 'SURVEY_LINK_PLACEHOLDER';
 
-  // Update participant to booked, preserve survey link
-  const participant = db.prepare('SELECT * FROM participants WHERE email = ?').get(cleanEmail) as any;
-  if (!participant) {
-    throw new Error('Participant not found');
+  // Find participant by email
+  let participant = db.prepare('SELECT * FROM participants WHERE email = ?').get(cleanEmail) as any;
+
+  // Add booking_time_est column if not exists - wrapped in a transaction for safety
+  db.transaction(() => {
+    try {
+      db.prepare('ALTER TABLE participants ADD COLUMN booking_time_est TEXT').run();
+    } catch (e) {
+      if (!e.message.includes('duplicate column name')) {
+        throw e; // re-throw error if it's not about a duplicate column
+      }
+    }
+  })();
+  
+  if (participant) {
+    // Participant exists, update their status and booking info
+    db.prepare(`
+      UPDATE participants 
+      SET 
+        status = 'booking_scheduled', 
+        booking_time = ?, 
+        booking_time_est = ?, 
+        cancel_link = ?, 
+        reschedule_link = ?, 
+        survey_link = ? 
+      WHERE email = ?
+    `).run(
+      bookingTimeUtc,
+      bookingTimeEst,
+      cancelLink,
+      rescheduleLink,
+      participant.survey_link || surveyLink, // Preserve existing survey link
+      cleanEmail
+    );
+  } else {
+    // Participant does not exist, create a new one with booking_scheduled status
+    db.prepare(`
+      INSERT INTO participants (email, status, booking_time, booking_time_est, cancel_link, reschedule_link, survey_link, created_at)
+      VALUES (?, 'booking_scheduled', ?, ?, ?, ?, ?, ?)
+    `).run(
+      cleanEmail,
+      bookingTimeUtc,
+      bookingTimeEst,
+      cancelLink,
+      rescheduleLink,
+      surveyLink,
+      new Date().toISOString()
+    );
   }
-  // Add booking_time_est column if not exists
-  try {
-    db.prepare('ALTER TABLE participants ADD COLUMN booking_time_est TEXT').run();
-  } catch (e) {}
-  db.prepare(`UPDATE participants SET status = 'booked', booking_time = ?, booking_time_est = ?, cancel_link = ?, reschedule_link = ?, survey_link = ? WHERE email = ?`).run(
-    bookingTimeUtc,
-    bookingTimeEst,
-    cancelLink,
-    rescheduleLink,
-    participant.survey_link,
-    cleanEmail
-  );
+
+  // Get the updated or newly created participant
   const updatedParticipant = db.prepare('SELECT * FROM participants WHERE email = ?').get(cleanEmail) as any;
 
   // Create booking_scheduled notification
@@ -241,5 +275,6 @@ export async function bookParticipant({ startTime, endTime, email, body }: SendB
     age: updatedParticipant.age,
     extraData: { bookingTimeUtc }
   });
+
   return updatedParticipant;
 } 
