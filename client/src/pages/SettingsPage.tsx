@@ -19,6 +19,7 @@ import {
   Grid
 } from '@mui/material';
 import { CloudUpload, Storage, Info, CheckCircle, Error } from '@mui/icons-material';
+import { fetchWithAuth, API_BASE_URL } from '../utils/api';
 
 interface DatabaseInfo {
   exists: boolean;
@@ -47,20 +48,18 @@ const SettingsPage: React.FC = () => {
   const fetchDatabaseInfo = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/settings/database-info', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await fetchWithAuth('/api/settings/database-info');
       
       if (response.ok) {
         const data = await response.json();
         setDatabaseInfo(data);
       } else {
         console.error('Failed to fetch database info');
+        setMessage({ type: 'error', text: 'Failed to fetch database info.' });
       }
     } catch (error) {
       console.error('Error fetching database info:', error);
+      setMessage({ type: 'error', text: 'An error occurred while fetching database info.' });
     } finally {
       setLoading(false);
     }
@@ -92,10 +91,18 @@ const SettingsPage: React.FC = () => {
       const formData = new FormData();
       formData.append('database', selectedFile);
 
-      const response = await fetch('/api/settings/upload-database', {
+      // We need to use fetchWithAuth but it defaults to 'application/json'
+      // so we create a custom fetch for multipart/form-data
+      const token = await (await import('../config/firebase')).auth.currentUser?.getIdToken();
+      if (!token) {
+        throw new Error('No authentication token available');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/settings/upload-database`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`,
+          // 'Content-Type' is set automatically by the browser for FormData
         },
         body: formData
       });

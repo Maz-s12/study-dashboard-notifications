@@ -15,6 +15,7 @@ import {
   Drawer,
   List,
   ListItem,
+  ListItemButton,
   ListItemText,
   useMediaQuery,
   Link
@@ -71,8 +72,10 @@ const Navbar = () => {
       </Typography>
       <List>
         {navLinks.map((link) => (
-          <ListItem button component={RouterLink} to={link.path} key={link.text}>
-            <ListItemText primary={link.text} />
+          <ListItem key={link.text} disablePadding>
+            <ListItemButton component={RouterLink} to={link.path}>
+              <ListItemText primary={link.text} />
+            </ListItemButton>
           </ListItem>
         ))}
       </List>
