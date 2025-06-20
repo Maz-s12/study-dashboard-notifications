@@ -15,11 +15,17 @@ import {
   Menu,
   MenuItem,
   useMediaQuery,
-  Link
+  Link,
+  List,
+  ListItem,
+  ListItemText,
+  ListSubheader,
+  Divider
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import MenuIcon from '@mui/icons-material/Menu';
 import SettingsIcon from '@mui/icons-material/Settings';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import EmailReceivedTable from './pages/EmailReceivedTable';
 import PreScreenCompletedTable from './pages/PreScreenCompletedTable';
 import EligibleParticipantsTable from './pages/EligibleParticipantsTable';
@@ -30,25 +36,38 @@ import { useAuth } from './contexts/AuthContext';
 
 const theme = createTheme();
 
+// Custom hook to manage dropdown menus
+const useMenu = () => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  return { anchorEl, open, handleClick, handleClose };
+};
+
 // Navbar component
 const Navbar = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
+  
+  const mobileMenu = useMenu();
+  const notificationsMenu = useMenu();
+  const participantsMenu = useMenu();
 
   const handleNavigate = (path: string) => {
     navigate(path);
-    handleMenuClose();
+    mobileMenu.handleClose();
+    notificationsMenu.handleClose();
+    participantsMenu.handleClose();
   };
 
   const handleLogout = async () => {
@@ -60,13 +79,109 @@ const Navbar = () => {
     }
   };
 
-  const navLinks = [
-    { name: 'Emails', path: '/email-received' },
-    { name: 'Surveys', path: '/pre-screen-completed' },
-    { name: 'Awaiting Booking', path: '/eligibility-confirmed' },
-    { name: 'Approve Bookings', path: '/booking-scheduled' },
-    { name: 'Bookings', path: '/bookings' },
+  const navStructure = [
+    {
+      name: 'Notifications',
+      menu: notificationsMenu,
+      items: [
+        { name: 'Emails', path: '/email-received' },
+        { name: 'Surveys', path: '/pre-screen-completed' },
+        { name: 'Approve Surveys', path: '/booking-scheduled' },
+      ],
+    },
+    {
+      name: 'Participants',
+      menu: participantsMenu,
+      items: [
+        { name: 'Awaiting Booking', path: '/eligibility-confirmed' },
+      ],
+    },
+    {
+      name: 'Bookings',
+      path: '/bookings',
+    },
   ];
+
+  const renderDesktopMenu = () => (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+      {navStructure.map((navItem) =>
+        navItem.path ? (
+          <Link
+            key={navItem.name}
+            component={RouterLink}
+            to={navItem.path}
+            variant="button"
+            sx={{ color: 'text.primary', textDecoration: 'none', '&:hover': { color: 'primary.main' } }}
+          >
+            {navItem.name}
+          </Link>
+        ) : (
+          <React.Fragment key={navItem.name}>
+            <Button
+              aria-controls={`${navItem.name}-menu`}
+              aria-haspopup="true"
+              onClick={navItem.menu.handleClick}
+              endIcon={<ArrowDropDownIcon />}
+              sx={{ color: 'text.primary' }}
+            >
+              {navItem.name}
+            </Button>
+            <Menu
+              id={`${navItem.name}-menu`}
+              anchorEl={navItem.menu.anchorEl}
+              open={navItem.menu.open}
+              onClose={navItem.menu.handleClose}
+              MenuListProps={{ 'aria-labelledby': 'basic-button' }}
+            >
+              {navItem.items?.map((item) => (
+                <MenuItem key={item.name} onClick={() => handleNavigate(item.path)}>
+                  {item.name}
+                </MenuItem>
+              ))}
+            </Menu>
+          </React.Fragment>
+        )
+      )}
+    </Box>
+  );
+
+  const renderMobileMenu = () => (
+    <>
+      <IconButton size="large" edge="start" color="inherit" aria-label="menu" onClick={mobileMenu.handleClick}>
+        <MenuIcon />
+      </IconButton>
+      <Menu
+        anchorEl={mobileMenu.anchorEl}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        keepMounted
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        open={mobileMenu.open}
+        onClose={mobileMenu.handleClose}
+        PaperProps={{ style: { width: '250px' } }}
+      >
+        <List>
+          {navStructure.map((navItem) => (
+            <React.Fragment key={navItem.name}>
+              {navItem.path ? (
+                 <ListItem button onClick={() => handleNavigate(navItem.path)}>
+                   <ListItemText primary={navItem.name} />
+                 </ListItem>
+              ) : (
+                <>
+                  <ListSubheader>{navItem.name}</ListSubheader>
+                  {navItem.items?.map((item) => (
+                    <ListItem key={item.name} button onClick={() => handleNavigate(item.path)} sx={{ pl: 4 }}>
+                      <ListItemText primary={item.name} />
+                    </ListItem>
+                  ))}
+                </>
+              )}
+            </React.Fragment>
+          ))}
+        </List>
+      </Menu>
+    </>
+  );
 
   return (
     <AppBar position="static" color="default" elevation={1} sx={{ backgroundColor: 'white', mb: 4 }}>
@@ -75,59 +190,7 @@ const Navbar = () => {
           Research Dashboard
         </Typography>
 
-        {isMobile ? (
-          <>
-            <IconButton
-              size="large"
-              edge="start"
-              color="inherit"
-              aria-label="menu"
-              onClick={handleMenuOpen}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Menu
-              anchorEl={anchorEl}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
-            >
-              {navLinks.map((link) => (
-                <MenuItem key={link.name} onClick={() => handleNavigate(link.path)}>
-                  {link.name}
-                </MenuItem>
-              ))}
-            </Menu>
-          </>
-        ) : (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                component={RouterLink}
-                to={link.path}
-                variant="button"
-                sx={{
-                  color: 'text.primary',
-                  textDecoration: 'none',
-                  '&:hover': {
-                    color: 'primary.main',
-                  },
-                }}
-              >
-                {link.name}
-              </Link>
-            ))}
-          </Box>
-        )}
+        {isMobile ? renderMobileMenu() : renderDesktopMenu()}
 
         <Box sx={{ flexGrow: isMobile ? 0 : 1 }} />
 
