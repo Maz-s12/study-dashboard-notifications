@@ -20,6 +20,7 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import apiRoutes from './api/routes';
+import interestedRoutes from './api/routes/interested';
 import { createInterestedNotification, getNotifications, approveEmailNotification, createPreScreenCompletedNotification } from './api/controllers/notification.controller';
 import { createParticipant } from './api/controllers/participant.controller';
 import { SurveyMonkeyResponse } from './api/types/notification.types';
@@ -58,6 +59,8 @@ app.get('/api/health', (req, res) => {
 });
 
 // Public routes (if any) go here
+app.use('/api/interested', interestedRoutes);
+
 app.post('/api/login', (req, res) => {
   // Handle login if needed (Firebase handles this client-side)
   res.json({ message: 'Login route' });
