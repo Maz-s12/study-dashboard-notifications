@@ -140,8 +140,8 @@ export async function createBooking(notificationData: any): Promise<any> {
   const { email, bookingTime, cancelLink, rescheduleLink, surveyLink, name, bookingTimeEst } = notificationData;
   
   // Get participant ID
-  const participant = db.prepare('SELECT id FROM participants WHERE email = ?').get(email);
-  if (!participant) {
+  const participant = db.prepare('SELECT id FROM participants WHERE email = ?').get(email) as any;
+  if (!participant || !participant.id) {
     throw new Error('Participant not found');
   }
 

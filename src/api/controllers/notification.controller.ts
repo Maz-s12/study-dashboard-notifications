@@ -379,16 +379,18 @@ export async function approveBookingScheduledNotification(id: number): Promise<N
       data = JSON.parse(data);
     }
     
-    await createBooking({
-      email: notification.email,
-      bookingTime: data.bookingTime,
-      cancelLink: data.cancelLink,
-      rescheduleLink: data.rescheduleLink,
-      surveyLink: data.surveyLink,
-      name: data.name,
-      bookingTimeEst: data.bookingTimeEst
-    });
-    console.log('Booking record created successfully');
+    if (data) {
+      await createBooking({
+        email: notification.email,
+        bookingTime: data.bookingTime || '',
+        cancelLink: data.cancelLink || '',
+        rescheduleLink: data.rescheduleLink || '',
+        surveyLink: data.surveyLink || '',
+        name: data.name || '',
+        bookingTimeEst: data.bookingTime || ''
+      });
+      console.log('Booking record created successfully');
+    }
   } catch (err) {
     console.error('Error creating booking record:', err);
   }
