@@ -89,7 +89,7 @@ const Navbar = () => {
       items: [
         { name: 'Emails', path: '/email-received' },
         { name: 'Surveys', path: '/pre-screen-completed' },
-        { name: 'Approve Surveys', path: '/booking-scheduled' },
+        { name: 'Approve Bookings', path: '/booking-scheduled' },
       ],
     },
     {
