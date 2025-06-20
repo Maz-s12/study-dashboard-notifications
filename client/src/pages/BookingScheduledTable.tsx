@@ -122,7 +122,7 @@ const BookingScheduledTable: React.FC = () => {
 
   return (
     <div style={{ padding: 24 }}>
-      <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#374151', marginBottom: 24 }}><Calendar style={{ width: 20, height: 20, color: '#6b7280', marginRight: 8 }} />Booking Scheduled</h2>
+      <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#374151', marginBottom: 24 }}><Calendar style={{ width: 20, height: 20, color: '#6b7280', marginRight: 8 }} />Approve Bookings</h2>
       <div style={{ marginBottom: 24 }}>
         <label htmlFor="status-filter" style={{ marginRight: 8, fontWeight: 500 }}>Status:</label>
         <select id="status-filter" value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ padding: '4px 12px', borderRadius: 4, border: '1px solid #d1d5db', fontSize: 14 }}>

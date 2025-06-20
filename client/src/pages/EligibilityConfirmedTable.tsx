@@ -54,22 +54,37 @@ const EligibilityConfirmedTable: React.FC = () => {
   const [menuState, setMenuState] = useState<{ isOpen: boolean; position: { x: number; y: number }; notification: Notification | null }>({ isOpen: false, position: { x: 0, y: 0 }, notification: null });
   const [statusFilter, setStatusFilter] = useState<string>('pending');
 
-  useEffect(() => { fetchNotifications(); }, []);
+  useEffect(() => { 
+    let mounted = true;
+    
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetchWithAuth('/api/notifications');
+        const rawData = await response.json();
+        
+        if (mounted) {
+          setNotifications(rawData.filter((n: Notification) => n.type === 'eligibility_confirmed'));
+          setError(null);
+        }
+      } catch (err) {
+        if (mounted) {
+          console.error('Error fetching notifications:', err);
+          setError('Failed to load notifications');
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
 
-  const fetchNotifications = async () => {
-    try {
-      setLoading(true);
-      const response = await fetchWithAuth('/api/notifications');
-      const rawData = await response.json();
-      setNotifications(rawData.filter((n: Notification) => n.type === 'eligibility_confirmed'));
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching notifications:', err);
-      setError('Failed to load notifications');
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchData();
+    
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>, notification: Notification) => {
     event.preventDefault();
