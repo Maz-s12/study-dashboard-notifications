@@ -15,6 +15,18 @@ interface Notification {
   emailBody?: string;
 }
 
+// Helper function to strip HTML tags and convert to plain text
+const stripHtml = (html: string): string => {
+  if (!html) return '';
+  // Create a temporary div to parse HTML
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = html;
+  // Get text content and clean up whitespace
+  return tempDiv.textContent || tempDiv.innerText || ''
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
 const NotificationMenu: React.FC<{
   isOpen: boolean;
   onClose: () => void;
@@ -160,7 +172,7 @@ const EmailReceivedTable: React.FC = () => {
                         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontWeight: 500, marginBottom: '4px' }}>{notification.emailSubject || '(No subject)'}</div>
-                            <div style={{ color: '#6b7280', whiteSpace: expandedRows[notification.id] ? 'pre-wrap' : 'nowrap', overflow: 'hidden', textOverflow: expandedRows[notification.id] ? 'unset' : 'ellipsis' }}>{notification.emailBody && (expandedRows[notification.id] ? notification.emailBody : (notification.emailBody.length > 50 ? `${notification.emailBody.slice(0, 50)}...` : notification.emailBody))}</div>
+                            <div style={{ color: '#6b7280', whiteSpace: expandedRows[notification.id] ? 'pre-wrap' : 'nowrap', overflow: 'hidden', textOverflow: expandedRows[notification.id] ? 'unset' : 'ellipsis' }}>{notification.emailBody && (expandedRows[notification.id] ? stripHtml(notification.emailBody) : (stripHtml(notification.emailBody).length > 50 ? `${stripHtml(notification.emailBody).slice(0, 50)}...` : stripHtml(notification.emailBody)))}</div>
                           </div>
                           <button onClick={e => { e.stopPropagation(); setExpandedRows(prev => ({ ...prev, [notification.id]: !prev[notification.id] })); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', flexShrink: 0, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#f3f4f6'; e.currentTarget.style.color = '#374151'; }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#6b7280'; }} title={expandedRows[notification.id] ? 'Collapse' : 'Expand'} aria-label={expandedRows[notification.id] ? 'Collapse email details' : 'Expand email details'}>{expandedRows[notification.id] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</button>
                         </div>
