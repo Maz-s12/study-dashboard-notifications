@@ -176,10 +176,11 @@ export async function getBookings(): Promise<any[]> {
 }
 
 export async function setParticipantEligible(email: string): Promise<void> {
-  // Preserve survey link when updating status
+  // Preserve survey link and pre_screen_data when updating status
   const participant = db.prepare('SELECT * FROM participants WHERE email = ?').get(email) as any;
   if (participant) {
-    db.prepare(`UPDATE participants SET status = 'eligible', survey_link = ? WHERE email = ?`).run(participant.survey_link, email);
+    db.prepare(`UPDATE participants SET status = 'eligible', prescreen_approval_date = ?, survey_link = ?, pre_screen_data = ? WHERE email = ?`)
+      .run(new Date().toISOString(), participant.survey_link, participant.pre_screen_data, email);
   }
 }
 
