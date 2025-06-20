@@ -120,13 +120,15 @@ router.get('/database-info', (req: Request, res: Response) => {
     const tables = db.prepare('SELECT name FROM sqlite_master WHERE type="table"').all();
     
     // Get row counts for each table
-    const tableStats = tables.map((table: any) => {
-      const count = db.prepare(`SELECT COUNT(*) as count FROM ${table.name}`).get() as { count: number };
-      return {
-        name: table.name,
-        rowCount: count.count
-      };
-    });
+    const tableStats = tables
+      .filter((table: any) => !table.name.startsWith('sqlite_')) // skip internal tables
+      .map((table: any) => {
+        const count = db.prepare(`SELECT COUNT(*) as count FROM "${table.name}"`).get() as { count: number };
+        return {
+          name: table.name,
+          rowCount: count.count
+        };
+      });
 
     db.close();
 

@@ -20,7 +20,8 @@ import {
   ListItem,
   ListItemText,
   ListSubheader,
-  Divider
+  Divider,
+  ListItemButton
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -163,15 +164,19 @@ const Navbar = () => {
           {navStructure.map((navItem) => (
             <React.Fragment key={navItem.name}>
               {navItem.path ? (
-                 <ListItem button onClick={() => handleNavigate(navItem.path)}>
-                   <ListItemText primary={navItem.name} />
-                 </ListItem>
+                <ListItem disablePadding>
+                  <ListItemButton onClick={() => handleNavigate(navItem.path)}>
+                    <ListItemText primary={navItem.name} />
+                  </ListItemButton>
+                </ListItem>
               ) : (
                 <>
                   <ListSubheader>{navItem.name}</ListSubheader>
                   {navItem.items?.map((item) => (
-                    <ListItem key={item.name} button onClick={() => handleNavigate(item.path)} sx={{ pl: 4 }}>
-                      <ListItemText primary={item.name} />
+                    <ListItem key={item.name} disablePadding sx={{ pl: 4 }}>
+                      <ListItemButton onClick={() => handleNavigate(item.path)}>
+                        <ListItemText primary={item.name} />
+                      </ListItemButton>
                     </ListItem>
                   ))}
                 </>
