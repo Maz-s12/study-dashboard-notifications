@@ -1,5 +1,5 @@
 import db from '../../db/setup';
-import { createParticipant, createOrUpdatePendingReviewParticipant, setParticipantEligible } from './participant.controller';
+import { createParticipant, createOrUpdatePendingReviewParticipant, setParticipantEligible, createBooking } from './participant.controller';
 import { Notification } from '../types/notification.types';
 import { format, parseISO } from 'date-fns';
 
@@ -371,6 +371,27 @@ export async function approveBookingScheduledNotification(id: number): Promise<N
   }
 
   db.prepare(`UPDATE notifications SET status = 'approved' WHERE id = ?`).run(id);
+
+  // Create booking record
+  try {
+    let data = notification.data;
+    if (typeof data === 'string') {
+      data = JSON.parse(data);
+    }
+    
+    await createBooking({
+      email: notification.email,
+      bookingTime: data.bookingTime,
+      cancelLink: data.cancelLink,
+      rescheduleLink: data.rescheduleLink,
+      surveyLink: data.surveyLink,
+      name: data.name,
+      bookingTimeEst: data.bookingTimeEst
+    });
+    console.log('Booking record created successfully');
+  } catch (err) {
+    console.error('Error creating booking record:', err);
+  }
 
   // Prepare booking date fields
   let booking_date = '';

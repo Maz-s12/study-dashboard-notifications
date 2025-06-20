@@ -136,6 +136,45 @@ export async function getEligibleParticipants(): Promise<any[]> {
   return stmt.all();
 }
 
+export async function createBooking(notificationData: any): Promise<any> {
+  const { email, bookingTime, cancelLink, rescheduleLink, surveyLink, name, bookingTimeEst } = notificationData;
+  
+  // Get participant ID
+  const participant = db.prepare('SELECT id FROM participants WHERE email = ?').get(email);
+  if (!participant) {
+    throw new Error('Participant not found');
+  }
+
+  const stmt = db.prepare(`
+    INSERT INTO bookings (participant_id, email, name, booking_time, booking_time_est, cancel_link, reschedule_link, survey_link, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  const result = stmt.run(
+    participant.id,
+    email,
+    name,
+    bookingTime,
+    bookingTimeEst,
+    cancelLink,
+    rescheduleLink,
+    surveyLink,
+    new Date().toISOString()
+  );
+
+  return db.prepare('SELECT * FROM bookings WHERE id = ?').get(result.lastInsertRowid);
+}
+
+export async function getBookings(): Promise<any[]> {
+  const stmt = db.prepare(`
+    SELECT b.*, p.name as participant_name, p.email as participant_email
+    FROM bookings b
+    LEFT JOIN participants p ON b.participant_id = p.id
+    ORDER BY b.booking_time DESC
+  `);
+  return stmt.all();
+}
+
 export async function setParticipantEligible(email: string): Promise<void> {
   // Preserve survey link when updating status
   const participant = db.prepare('SELECT * FROM participants WHERE email = ?').get(email) as any;

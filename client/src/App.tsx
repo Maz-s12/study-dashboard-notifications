@@ -8,6 +8,7 @@ import EmailReceivedTable from './pages/EmailReceivedTable';
 import PreScreenCompletedTable from './pages/PreScreenCompletedTable';
 import EligibleParticipantsTable from './pages/EligibleParticipantsTable';
 import BookingScheduledTable from './pages/BookingScheduledTable';
+import BookingsTable from './pages/BookingsTable';
 import { useAuth } from './contexts/AuthContext';
 
 const theme = createTheme();
@@ -40,6 +41,7 @@ const Navbar = () => {
       <Link to="/pre-screen-completed" style={{ textDecoration: 'none', color: '#2563eb', fontWeight: 600 }}>Pre-Screen Completed</Link>
       <Link to="/eligibility-confirmed" style={{ textDecoration: 'none', color: '#2563eb', fontWeight: 600 }}>Eligibility Confirmed</Link>
       <Link to="/booking-scheduled" style={{ textDecoration: 'none', color: '#2563eb', fontWeight: 600 }}>Booking Scheduled</Link>
+      <Link to="/bookings" style={{ textDecoration: 'none', color: '#2563eb', fontWeight: 600 }}>Bookings</Link>
       <div style={{ marginLeft: 'auto' }}>
         <Button variant="outlined" color="primary" onClick={handleLogout}>
           Logout
@@ -94,6 +96,15 @@ function App() {
                 <ProtectedRoute>
                   <Navbar />
                   <BookingScheduledTable />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/bookings"
+              element={
+                <ProtectedRoute>
+                  <Navbar />
+                  <BookingsTable />
                 </ProtectedRoute>
               }
             />

@@ -56,6 +56,24 @@ try {
   `);
   console.log('Participants table created/verified');
 
+  // Create bookings table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS bookings (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      participant_id INTEGER NOT NULL,
+      email TEXT NOT NULL,
+      name TEXT,
+      booking_time TEXT NOT NULL,
+      booking_time_est TEXT,
+      cancel_link TEXT,
+      reschedule_link TEXT,
+      survey_link TEXT,
+      created_at TEXT NOT NULL,
+      FOREIGN KEY (participant_id) REFERENCES participants (id)
+    )
+  `);
+  console.log('Bookings table created/verified');
+
   // Debug: List all notifications
   const notifications = db.prepare('SELECT * FROM notifications').all();
   console.log('Current notifications in database:', notifications);

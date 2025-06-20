@@ -157,7 +157,9 @@ const EmailReceivedTable: React.FC = () => {
                 <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '12px', fontWeight: '500', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Participant</th>
                 <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '12px', fontWeight: '500', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
                 <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '12px', fontWeight: '500', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Subject & Body</th>
-                <th style={{ padding: '12px 24px', textAlign: 'right', fontSize: '12px', fontWeight: '500', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Actions</th>
+                {statusFilter === 'pending' && (
+                  <th style={{ padding: '12px 24px', textAlign: 'right', fontSize: '12px', fontWeight: '500', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Actions</th>
+                )}
               </tr>
             </thead>
             <tbody style={{ backgroundColor: 'white' }}>
@@ -177,22 +179,18 @@ const EmailReceivedTable: React.FC = () => {
                           <button onClick={e => { e.stopPropagation(); setExpandedRows(prev => ({ ...prev, [notification.id]: !prev[notification.id] })); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', flexShrink: 0, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#f3f4f6'; e.currentTarget.style.color = '#374151'; }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#6b7280'; }} title={expandedRows[notification.id] ? 'Collapse' : 'Expand'} aria-label={expandedRows[notification.id] ? 'Collapse email details' : 'Expand email details'}>{expandedRows[notification.id] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</button>
                         </div>
                       </td>
-                      <td style={{ padding: '16px 24px', whiteSpace: 'nowrap', textAlign: 'right', fontSize: '14px', fontWeight: '500' }}>
-                        {notification.status === 'pending' ? (
-                          <>
-                            <button onClick={() => handleApproveDirect(notification)} style={{ padding: '6px 16px', borderRadius: 4, border: 'none', backgroundColor: '#2563eb', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: 14, marginRight: 8 }}>Approve</button>
-                            <button onClick={() => handleRejectDirect(notification)} style={{ padding: '6px 16px', borderRadius: 4, border: 'none', backgroundColor: '#dc2626', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>Reject</button>
-                          </>
-                        ) : (
-                          <button onClick={e => handleMenuClick(e, notification)} disabled={notification.status === 'approved'} style={{ padding: '4px', borderRadius: '9999px', border: 'none', backgroundColor: 'transparent', cursor: notification.status === 'approved' ? 'not-allowed' : 'pointer', opacity: notification.status === 'approved' ? 0.5 : 1, transition: 'background-color 0.2s' }} onMouseEnter={e => { if (notification.status !== 'approved') { e.currentTarget.style.backgroundColor = '#f3f4f6'; } }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}><MoreVertical style={{ width: '16px', height: '16px', color: '#6b7280' }} /></button>
-                        )}
-                      </td>
+                      {statusFilter === 'pending' && (
+                        <td style={{ padding: '16px 24px', whiteSpace: 'nowrap', textAlign: 'right', fontSize: '14px', fontWeight: '500' }}>
+                          <button onClick={() => handleApproveDirect(notification)} style={{ padding: '6px 16px', borderRadius: 4, border: 'none', backgroundColor: '#2563eb', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: 14, marginRight: 8 }}>Approve</button>
+                          <button onClick={() => handleRejectDirect(notification)} style={{ padding: '6px 16px', borderRadius: 4, border: 'none', backgroundColor: '#dc2626', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>Reject</button>
+                        </td>
+                      )}
                     </tr>
                   </React.Fragment>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} style={{ padding: '32px 24px', textAlign: 'center', fontSize: '14px', color: '#6b7280' }}>No notifications of this type</td>
+                  <td colSpan={statusFilter === 'pending' ? 5 : 4} style={{ padding: '32px 24px', textAlign: 'center', fontSize: '14px', color: '#6b7280' }}>No notifications of this type</td>
                 </tr>
               )}
             </tbody>

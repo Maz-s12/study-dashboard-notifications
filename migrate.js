@@ -14,6 +14,23 @@ db.prepare(`
   )
 `).run();
 
+// Create bookings table
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS bookings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    participant_id INTEGER NOT NULL,
+    email TEXT NOT NULL,
+    name TEXT,
+    booking_time TEXT NOT NULL,
+    booking_time_est TEXT,
+    cancel_link TEXT,
+    reschedule_link TEXT,
+    survey_link TEXT,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (participant_id) REFERENCES participants (id)
+  )
+`).run();
+
 // 2. Add missing columns if they don't exist
 const requiredColumns = [
   { name: 'booking_time', type: 'TEXT' },
