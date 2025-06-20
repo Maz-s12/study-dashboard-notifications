@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ClipboardCheck, Loader, ChevronDown, ChevronUp } from 'lucide-react';
 import { fetchWithAuth } from '../utils/api';
+import { Menu, MenuItem, Button } from '@mui/material';
 
 const STATUS_OPTIONS = ['pending', 'approved', 'rejected'];
 
@@ -17,43 +18,11 @@ interface Notification {
   prescreen_approval_date?: string;
 }
 
-const NotificationMenu: React.FC<{
-  isOpen: boolean;
-  onClose: () => void;
-  onApprove: () => void;
-  onReject: () => void;
-  position: { x: number; y: number };
-}> = ({ isOpen, onClose, onApprove, onReject, position }) => {
-  const [actionLoading, setActionLoading] = useState(false);
-  if (!isOpen) return null;
-
-  const handleApprove = async () => {
-    setActionLoading(true);
-    await onApprove();
-    setActionLoading(false);
-  };
-  const handleReject = async () => {
-    setActionLoading(true);
-    await onReject();
-    setActionLoading(false);
-  };
-
-  return (
-    <>
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 40 }} onClick={onClose} />
-      <div style={{ position: 'fixed', zIndex: 50, backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)', padding: '4px 0', minWidth: '128px', left: Math.min(position.x, typeof window !== 'undefined' ? window.innerWidth - 150 : position.x), top: Math.min(position.y, typeof window !== 'undefined' ? window.innerHeight - 100 : position.y) }}>
-        <button onClick={handleApprove} disabled={actionLoading} style={{ width: '100%', padding: '8px 16px', textAlign: 'left', fontSize: '14px', border: 'none', backgroundColor: 'transparent', cursor: actionLoading ? 'not-allowed' : 'pointer', transition: 'background-color 0.2s', opacity: actionLoading ? 0.5 : 1 }} onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f3f4f6'} onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>{actionLoading ? 'Approving...' : 'Approve'}</button>
-        <button onClick={handleReject} disabled={actionLoading} style={{ width: '100%', padding: '8px 16px', textAlign: 'left', fontSize: '14px', border: 'none', backgroundColor: 'transparent', cursor: actionLoading ? 'not-allowed' : 'pointer', transition: 'background-color 0.2s', color: '#dc2626', opacity: actionLoading ? 0.5 : 1 }} onMouseEnter={e => e.currentTarget.style.backgroundColor = '#fee2e2'} onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>{actionLoading ? 'Rejecting...' : 'Reject'}</button>
-      </div>
-    </>
-  );
-};
-
 const PreScreenCompletedTable: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [menuState, setMenuState] = useState<{ isOpen: boolean; position: { x: number; y: number }; notification: Notification | null }>({ isOpen: false, position: { x: 0, y: 0 }, notification: null });
+  const [menuState, setMenuState] = useState<{ anchorEl: null | HTMLElement; notification: Notification | null }>({ anchorEl: null, notification: null });
   const [expandedRows, setExpandedRows] = useState<{ [id: string]: boolean }>({});
   const [statusFilter, setStatusFilter] = useState<string>('pending');
 
@@ -74,8 +43,12 @@ const PreScreenCompletedTable: React.FC = () => {
     }
   };
 
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, notification: Notification) => {
+    setMenuState({ anchorEl: event.currentTarget, notification });
+  };
+
   const handleMenuClose = () => {
-    setMenuState({ isOpen: false, position: { x: 0, y: 0 }, notification: null });
+    setMenuState({ anchorEl: null, notification: null });
   };
 
   const handleApprove = async () => {
@@ -96,26 +69,6 @@ const PreScreenCompletedTable: React.FC = () => {
       await fetchWithAuth(`/api/notifications/${menuState.notification.id}/reject-pre-screen`, { method: 'POST' });
       await fetchNotifications();
       handleMenuClose();
-    } catch (error) {
-      console.error('Error rejecting notification:', error);
-      setError('Failed to reject notification');
-    }
-  };
-
-  const handleApproveDirect = async (notification: Notification) => {
-    try {
-      await fetchWithAuth(`/api/notifications/${notification.id}/approve-pre-screen`, { method: 'POST' });
-      await fetchNotifications();
-    } catch (error) {
-      console.error('Error approving notification:', error);
-      setError('Failed to approve notification');
-    }
-  };
-
-  const handleRejectDirect = async (notification: Notification) => {
-    try {
-      await fetchWithAuth(`/api/notifications/${notification.id}/reject-pre-screen`, { method: 'POST' });
-      await fetchNotifications();
     } catch (error) {
       console.error('Error rejecting notification:', error);
       setError('Failed to reject notification');
@@ -185,8 +138,15 @@ const PreScreenCompletedTable: React.FC = () => {
                       </td>
                       {notification.status === 'pending' && (
                         <td style={{ padding: '16px 24px', whiteSpace: 'nowrap', textAlign: 'right', fontSize: '14px', fontWeight: '500' }}>
-                          <button onClick={() => handleApproveDirect(notification)} style={{ padding: '6px 16px', borderRadius: 4, border: 'none', backgroundColor: '#7c3aed', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: 14, marginRight: 8 }}>Approve</button>
-                          <button onClick={() => handleRejectDirect(notification)} style={{ padding: '6px 16px', borderRadius: 4, border: 'none', backgroundColor: '#dc2626', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>Reject</button>
+                          <Button
+                            aria-controls={`actions-menu-${notification.id}`}
+                            aria-haspopup="true"
+                            onClick={(e) => handleMenuOpen(e, notification)}
+                            variant="outlined"
+                            size="small"
+                          >
+                            Actions
+                          </Button>
                         </td>
                       )}
                     </tr>
@@ -218,7 +178,15 @@ const PreScreenCompletedTable: React.FC = () => {
           </table>
         </div>
       </div>
-      <NotificationMenu isOpen={menuState.isOpen} onClose={handleMenuClose} onApprove={handleApprove} onReject={handleReject} position={menuState.position} />
+      <Menu
+        id="actions-menu"
+        anchorEl={menuState.anchorEl}
+        open={Boolean(menuState.anchorEl)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={handleApprove}>Approve</MenuItem>
+        <MenuItem onClick={handleReject} sx={{ color: 'error.main' }}>Reject</MenuItem>
+      </Menu>
     </div>
   );
 };

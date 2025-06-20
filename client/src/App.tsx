@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link as RouterLink, useNavigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { Login } from './components/Login';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -58,7 +58,6 @@ const Navbar = () => {
   const navigate = useNavigate();
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
-  const location = useLocation();
   
   const mobileMenu = useMenu();
   const notificationsMenu = useMenu();
@@ -102,13 +101,6 @@ const Navbar = () => {
       path: '/bookings',
     },
   ];
-
-  useEffect(() => {
-    notificationsMenu.handleClose();
-    participantsMenu.handleClose();
-    mobileMenu.handleClose();
-    // eslint-disable-next-line
-  }, [location.pathname]);
 
   const renderDesktopMenu = () => (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
