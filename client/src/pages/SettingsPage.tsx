@@ -18,7 +18,7 @@ import {
   Divider,
   Grid
 } from '@mui/material';
-import { CloudUpload, Database, Info, CheckCircle, Error } from '@mui/icons-material';
+import { CloudUpload, Storage, Info, CheckCircle, Error } from '@mui/icons-material';
 
 interface DatabaseInfo {
   exists: boolean;
@@ -142,7 +142,7 @@ const SettingsPage: React.FC = () => {
           <Card elevation={2}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <Database sx={{ mr: 2, color: 'primary.main' }} />
+                <Storage sx={{ mr: 2, color: 'primary.main' }} />
                 <Typography variant="h6" fontWeight={600}>
                   Database Upload
                 </Typography>
