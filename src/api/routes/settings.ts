@@ -3,6 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import Database from 'better-sqlite3';
+import db from '../../db/setup';
 
 const router = Router();
 
@@ -143,6 +144,44 @@ router.get('/database-info', (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error getting database info:', error);
     res.status(500).json({ error: 'Failed to get database info' });
+  }
+});
+
+// Endpoint to execute a raw SQL query
+router.post('/execute-sql', async (req: Request, res: Response) => {
+  const { query } = req.body;
+
+  if (!query || typeof query !== 'string') {
+    return res.status(400).json({ error: 'Query is missing or invalid' });
+  }
+
+  // Basic validation to prevent dangerous commands
+  const lowerCaseQuery = query.toLowerCase().trim();
+  if (lowerCaseQuery.startsWith('drop table') || lowerCaseQuery.startsWith('delete from sqlite_master')) {
+    return res.status(403).json({ error: 'This query is not allowed.' });
+  }
+
+  try {
+    let results;
+
+    // Use .all() for SELECT, and .run() for other statements
+    if (lowerCaseQuery.startsWith('select')) {
+      results = db.prepare(query).all();
+    } else {
+      const info = db.prepare(query).run();
+      results = {
+        changes: info.changes,
+        lastInsertRowid: info.lastInsertRowid,
+      };
+    }
+    
+    res.json({ success: true, results });
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json({ success: false, error: error.message });
+    } else {
+      res.status(500).json({ success: false, error: 'An unknown error occurred' });
+    }
   }
 });
 

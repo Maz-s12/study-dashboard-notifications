@@ -18,7 +18,7 @@ import {
   Divider,
   Grid
 } from '@mui/material';
-import { CloudUpload, Storage, Info, CheckCircle, Error } from '@mui/icons-material';
+import { CloudUpload, Storage, Info, CheckCircle, Error, Code, Terminal } from '@mui/icons-material';
 import { fetchWithAuth } from '../utils/api';
 
 interface DatabaseInfo {
@@ -39,6 +39,9 @@ const SettingsPage: React.FC = () => {
   const [databaseInfo, setDatabaseInfo] = useState<DatabaseInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [sqlQuery, setSqlQuery] = useState<string>('');
+  const [sqlResult, setSqlResult] = useState<any>(null);
+  const [isExecuting, setIsExecuting] = useState<boolean>(false);
 
   // Fetch database info on component mount
   useEffect(() => {
@@ -124,6 +127,36 @@ const SettingsPage: React.FC = () => {
 
   const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleString();
+  };
+
+  const handleExecuteSql = async () => {
+    if (!sqlQuery.trim()) {
+      setMessage({ type: 'error', text: 'Query cannot be empty.' });
+      return;
+    }
+    setIsExecuting(true);
+    setSqlResult(null);
+    setMessage(null);
+    try {
+      const response = await fetchWithAuth('/api/settings/execute-sql', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: sqlQuery }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setSqlResult(data.results);
+        setMessage({ type: 'success', text: 'Query executed successfully.' });
+      } else {
+        setSqlResult({ error: data.error });
+        setMessage({ type: 'error', text: 'Query failed.' });
+      }
+    } catch (error) {
+      console.error('SQL execution error:', error);
+      setMessage({ type: 'error', text: 'An unexpected error occurred.' });
+    } finally {
+      setIsExecuting(false);
+    }
   };
 
   return (
@@ -299,6 +332,58 @@ const SettingsPage: React.FC = () => {
           </Card>
         </Grid>
       </Grid>
+      
+      {/* SQL Runner Section */}
+      <Card elevation={2} sx={{ mt: 4 }}>
+        <CardContent>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+            <Terminal sx={{ mr: 2, color: 'primary.main' }} />
+            <Typography variant="h6" fontWeight={600}>
+              SQL Query Runner
+            </Typography>
+          </Box>
+          <Alert severity="warning" sx={{ mb: 3 }}>
+            <strong>Warning:</strong> Executing queries directly can have unintended consequences. Use with caution.
+          </Alert>
+          <textarea
+            value={sqlQuery}
+            onChange={(e) => setSqlQuery(e.target.value)}
+            placeholder="Enter your SQL query here..."
+            style={{
+              width: '100%',
+              minHeight: '150px',
+              fontFamily: 'monospace',
+              fontSize: '14px',
+              padding: '12px',
+              borderRadius: '4px',
+              border: '1px solid #ccc',
+              boxSizing: 'border-box',
+              resize: 'vertical',
+            }}
+          />
+          <Button
+            variant="contained"
+            onClick={handleExecuteSql}
+            disabled={isExecuting}
+            fullWidth
+            sx={{ mt: 2 }}
+          >
+            {isExecuting ? <CircularProgress size={24} /> : 'Execute Query'}
+          </Button>
+
+          {sqlResult && (
+            <Paper sx={{ p: 2, mt: 3, bgcolor: 'grey.100', maxHeight: '400px', overflowY: 'auto' }}>
+              <Typography variant="subtitle2" sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
+                <Code sx={{ mr: 1, fontSize: '16px' }} />
+                Results
+              </Typography>
+              <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                {JSON.stringify(sqlResult, null, 2)}
+              </pre>
+            </Paper>
+          )}
+        </CardContent>
+      </Card>
     </Box>
   );
 };

@@ -2,7 +2,7 @@ import db from '../../db/setup';
 import { InterestedParticipant, SendBookingRequest } from '../types/participant.types';
 import { getFormattedSurveyResponse } from '../services/surveymonkey.service';
 import { DateTime } from 'luxon';
-import { createBookingScheduledNotification } from './notification.controller';
+import { createBookingScheduledNotification, silentlyApprovePreScreenNotification } from './notification.controller';
 
 // Get webhook URL from environment variables
 const POWER_AUTOMATE_WEBHOOK_URL = process.env.POWER_AUTOMATE_WEBHOOK_URL;
@@ -211,9 +211,15 @@ export async function bookParticipant({ startTime, endTime, email, body }: SendB
   // Placeholder for survey link
   const surveyLink = 'SURVEY_LINK_PLACEHOLDER';
 
-  // Find participant by email
   let participant = db.prepare('SELECT * FROM participants WHERE email = ?').get(cleanEmail) as any;
 
+  // If participant is pending_review, silently approve their pre-screen
+  if (participant && participant.status === 'pending_review') {
+    await silentlyApprovePreScreenNotification(cleanEmail);
+    // Re-fetch participant to get updated status
+    participant = db.prepare('SELECT * FROM participants WHERE email = ?').get(cleanEmail) as any;
+  }
+  
   // Add booking_time_est column if not exists - wrapped in a transaction for safety
   db.transaction(() => {
     try {
@@ -266,7 +272,6 @@ export async function bookParticipant({ startTime, endTime, email, body }: SendB
     );
   }
 
-  // Get the updated or newly created participant
   const updatedParticipant = db.prepare('SELECT * FROM participants WHERE email = ?').get(cleanEmail) as any;
 
   // Create booking_scheduled notification

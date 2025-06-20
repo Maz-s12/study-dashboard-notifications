@@ -443,4 +443,29 @@ export async function approveBookingScheduledNotification(id: number): Promise<N
   }
 
   return { ...notification, status: 'approved' };
+}
+
+export async function silentlyApprovePreScreenNotification(email: string): Promise<void> {
+  // Find the 'pre_screen_completed' notification for the given email
+  const notification = db.prepare(`
+    SELECT * FROM notifications 
+    WHERE email = ? AND type = 'pre_screen_completed' AND status = 'pending'
+  `).get(email) as Notification | undefined;
+
+  if (notification) {
+    console.log(`Silently approving pre-screen for ${email}`);
+    
+    // Update notification status to 'approved'
+    db.prepare(`UPDATE notifications SET status = 'approved' WHERE id = ?`).run(notification.id);
+
+    // Set participant status to eligible and add approval date
+    const approvalDate = new Date().toISOString();
+    db.prepare(`
+      UPDATE participants 
+      SET status = 'eligible', prescreen_approval_date = ? 
+      WHERE email = ?
+    `).run(approvalDate, notification.email);
+  } else {
+    console.log(`No pending pre-screen notification found for ${email} to silently approve.`);
+  }
 } 
