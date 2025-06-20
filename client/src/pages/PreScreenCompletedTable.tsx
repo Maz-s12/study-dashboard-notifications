@@ -14,6 +14,7 @@ interface Notification {
     name?: string;
   };
   surveyData?: any[];
+  prescreen_approval_date?: string;
 }
 
 const NotificationMenu: React.FC<{
@@ -144,6 +145,9 @@ const PreScreenCompletedTable: React.FC = () => {
                 <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '12px', fontWeight: '500', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Participant</th>
                 <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '12px', fontWeight: '500', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Name</th>
                 <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '12px', fontWeight: '500', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
+                {statusFilter === 'approved' && (
+                  <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '12px', fontWeight: '500', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Approval Date</th>
+                )}
                 <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: '12px', fontWeight: '500', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Survey</th>
                 {filteredNotifications.some(n => n.status === 'pending') && (
                   <th style={{ padding: '12px 24px', textAlign: 'right', fontSize: '12px', fontWeight: '500', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Actions</th>
@@ -159,6 +163,11 @@ const PreScreenCompletedTable: React.FC = () => {
                       <td style={{ padding: '16px 24px', whiteSpace: 'nowrap', fontSize: '14px', color: '#111827' }}>{notification.email}</td>
                       <td style={{ padding: '16px 24px', whiteSpace: 'nowrap', fontSize: '14px', color: '#111827' }}>{notification.data?.name || 'N/A'}</td>
                       <td style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}><span style={{ display: 'inline-flex', padding: '4px 8px', fontSize: '12px', fontWeight: '600', borderRadius: '9999px', backgroundColor: notification.status === 'approved' ? '#dcfce7' : '#fef3c7', color: notification.status === 'approved' ? '#166534' : '#92400e' }}>{notification.status}</span></td>
+                      {statusFilter === 'approved' && (
+                        <td style={{ padding: '16px 24px', whiteSpace: 'nowrap', fontSize: '14px', color: '#111827' }}>
+                          {notification.prescreen_approval_date ? new Date(notification.prescreen_approval_date).toLocaleString() : 'N/A'}
+                        </td>
+                      )}
                       <td style={{ padding: '16px 24px', fontSize: '14px', color: '#111827', position: 'relative' }}>
                         <button onClick={async () => {
                           setExpandedRows(prev => ({ ...prev, [notification.id]: !prev[notification.id] }));

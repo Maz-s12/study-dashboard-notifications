@@ -19,7 +19,8 @@ const requiredColumns = [
   { name: 'booking_time', type: 'TEXT' },
   { name: 'cancel_link', type: 'TEXT' },
   { name: 'reschedule_link', type: 'TEXT' },
-  { name: 'survey_link', type: 'TEXT' }
+  { name: 'survey_link', type: 'TEXT' },
+  { name: 'prescreen_approval_date', type: 'TEXT' }
 ];
 
 const pragma = db.prepare("PRAGMA table_info(participants)").all();

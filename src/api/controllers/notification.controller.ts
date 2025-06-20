@@ -45,7 +45,11 @@ export async function createInterestedNotification(
 export async function getNotifications(): Promise<Notification[]> {
   console.log('Fetching notifications...');
   const notifications = db.prepare(`
-    SELECT * FROM notifications 
+    SELECT 
+      n.*,
+      p.prescreen_approval_date
+    FROM notifications n
+    LEFT JOIN participants p ON n.email = p.email
     ORDER BY timestamp DESC
   `).all() as Notification[];
 
@@ -223,8 +227,13 @@ export async function approvePreScreenCompletedNotification(id: number): Promise
 
   db.prepare(`UPDATE notifications SET status = 'approved' WHERE id = ?`).run(id);
 
-  // Set participant status to eligible
-  await setParticipantEligible(notification.email);
+  // Set participant status to eligible and add approval date
+  const approvalDate = new Date().toISOString();
+  db.prepare(`
+    UPDATE participants 
+    SET status = 'eligible', prescreen_approval_date = ? 
+    WHERE email = ?
+  `).run(approvalDate, notification.email);
 
   // Send eligible participant email via Power Automate webhook if configured
   if (process.env.POWER_AUTOMATE_WEBHOOK_URL) {

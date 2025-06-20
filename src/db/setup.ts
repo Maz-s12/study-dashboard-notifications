@@ -50,7 +50,8 @@ try {
       booking_time TEXT,
       cancel_link TEXT,
       reschedule_link TEXT,
-      survey_link TEXT
+      survey_link TEXT,
+      prescreen_approval_date TEXT
     )
   `);
   console.log('Participants table created/verified');
