@@ -57,6 +57,8 @@ const PreScreenCompletedTable: React.FC = () => {
   const [expandedRows, setExpandedRows] = useState<{ [id: string]: boolean }>({});
   const [statusFilter, setStatusFilter] = useState<string>('pending');
 
+  useEffect(() => { fetchNotifications(); }, []);
+
   const fetchNotifications = async () => {
     try {
       setLoading(true);
@@ -71,22 +73,6 @@ const PreScreenCompletedTable: React.FC = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => { 
-    let mounted = true;
-    
-    const fetchData = async () => {
-      if (mounted) {
-        await fetchNotifications();
-      }
-    };
-
-    fetchData();
-    
-    return () => {
-      mounted = false;
-    };
-  }, []);
 
   const handleMenuClose = () => {
     setMenuState({ isOpen: false, position: { x: 0, y: 0 }, notification: null });

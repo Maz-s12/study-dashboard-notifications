@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link as RouterLink, useNavigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { Login } from './components/Login';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -56,7 +56,6 @@ const useMenu = () => {
 const Navbar = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
   
@@ -65,15 +64,10 @@ const Navbar = () => {
   const participantsMenu = useMenu();
 
   const handleNavigate = (path: string) => {
-    // Close all menus first
+    navigate(path);
     mobileMenu.handleClose();
     notificationsMenu.handleClose();
     participantsMenu.handleClose();
-    
-    // Only navigate if we're not already on the path
-    if (location.pathname !== path) {
-      navigate(path);
-    }
   };
 
   const handleLogout = async () => {

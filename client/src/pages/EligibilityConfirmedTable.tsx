@@ -54,6 +54,8 @@ const EligibilityConfirmedTable: React.FC = () => {
   const [menuState, setMenuState] = useState<{ isOpen: boolean; position: { x: number; y: number }; notification: Notification | null }>({ isOpen: false, position: { x: 0, y: 0 }, notification: null });
   const [statusFilter, setStatusFilter] = useState<string>('pending');
 
+  useEffect(() => { fetchNotifications(); }, []);
+
   const fetchNotifications = async () => {
     try {
       setLoading(true);
@@ -68,22 +70,6 @@ const EligibilityConfirmedTable: React.FC = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => { 
-    let mounted = true;
-    
-    const fetchData = async () => {
-      if (mounted) {
-        await fetchNotifications();
-      }
-    };
-
-    fetchData();
-    
-    return () => {
-      mounted = false;
-    };
-  }, []);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>, notification: Notification) => {
     event.preventDefault();
