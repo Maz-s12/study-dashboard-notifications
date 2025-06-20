@@ -9,6 +9,7 @@ import PreScreenCompletedTable from './pages/PreScreenCompletedTable';
 import EligibleParticipantsTable from './pages/EligibleParticipantsTable';
 import BookingScheduledTable from './pages/BookingScheduledTable';
 import BookingsTable from './pages/BookingsTable';
+import SettingsPage from './pages/SettingsPage';
 import { useAuth } from './contexts/AuthContext';
 
 const theme = createTheme();
@@ -37,11 +38,12 @@ const Navbar = () => {
       marginBottom: 32,
       alignItems: 'center',
     }}>
-      <Link to="/email-received" style={{ textDecoration: 'none', color: '#2563eb', fontWeight: 600 }}>Email Received</Link>
-      <Link to="/pre-screen-completed" style={{ textDecoration: 'none', color: '#2563eb', fontWeight: 600 }}>Pre-Screen Completed</Link>
-      <Link to="/eligibility-confirmed" style={{ textDecoration: 'none', color: '#2563eb', fontWeight: 600 }}>Eligibility Confirmed</Link>
-      <Link to="/booking-scheduled" style={{ textDecoration: 'none', color: '#2563eb', fontWeight: 600 }}>Booking Scheduled</Link>
+      <Link to="/email-received" style={{ textDecoration: 'none', color: '#2563eb', fontWeight: 600 }}>Emails</Link>
+      <Link to="/pre-screen-completed" style={{ textDecoration: 'none', color: '#2563eb', fontWeight: 600 }}>Surveys</Link>
+      <Link to="/eligibility-confirmed" style={{ textDecoration: 'none', color: '#2563eb', fontWeight: 600 }}>Awaiting Booking</Link>
+      <Link to="/booking-scheduled" style={{ textDecoration: 'none', color: '#2563eb', fontWeight: 600 }}>Approve Bookings</Link>
       <Link to="/bookings" style={{ textDecoration: 'none', color: '#2563eb', fontWeight: 600 }}>Bookings</Link>
+      <Link to="/settings" style={{ textDecoration: 'none', color: '#2563eb', fontWeight: 600 }}>Settings</Link>
       <div style={{ marginLeft: 'auto' }}>
         <Button variant="outlined" color="primary" onClick={handleLogout}>
           Logout
@@ -105,6 +107,15 @@ function App() {
                 <ProtectedRoute>
                   <Navbar />
                   <BookingsTable />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <Navbar />
+                  <SettingsPage />
                 </ProtectedRoute>
               }
             />
