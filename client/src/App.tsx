@@ -6,7 +6,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { ThemeProvider, createTheme, Button } from '@mui/material';
 import EmailReceivedTable from './pages/EmailReceivedTable';
 import PreScreenCompletedTable from './pages/PreScreenCompletedTable';
-import EligibilityConfirmedTable from './pages/EligibilityConfirmedTable';
+import EligibleParticipantsTable from './pages/EligibleParticipantsTable';
 import BookingScheduledTable from './pages/BookingScheduledTable';
 import { useAuth } from './contexts/AuthContext';
 
@@ -84,7 +84,7 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Navbar />
-                  <EligibilityConfirmedTable />
+                  <EligibleParticipantsTable />
                 </ProtectedRoute>
               }
             />

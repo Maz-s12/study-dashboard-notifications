@@ -126,6 +126,16 @@ export async function debugPrintAllParticipants(): Promise<void> {
   console.log('All participants:', participants);
 }
 
+export async function getEligibleParticipants(): Promise<any[]> {
+  const stmt = db.prepare(`
+    SELECT id, name, pre_screen_data, prescreen_approval_date 
+    FROM participants 
+    WHERE status = 'eligible' AND booking_time IS NULL
+    ORDER BY prescreen_approval_date DESC
+  `);
+  return stmt.all();
+}
+
 export async function setParticipantEligible(email: string): Promise<void> {
   // Preserve survey link when updating status
   const participant = db.prepare('SELECT * FROM participants WHERE email = ?').get(email) as any;
