@@ -219,8 +219,13 @@ export async function bookParticipant({ startTime, endTime, email, body }: SendB
     try {
       db.prepare('ALTER TABLE participants ADD COLUMN booking_time_est TEXT').run();
     } catch (e) {
-      if (!e.message.includes('duplicate column name')) {
-        throw e; // re-throw error if it's not about a duplicate column
+      if (e instanceof Error) {
+        if (!e.message.includes('duplicate column name')) {
+          throw e; // re-throw error if it's not about a duplicate column
+        }
+      } else {
+        // Re-throw if it's not an Error object
+        throw e;
       }
     }
   })();
