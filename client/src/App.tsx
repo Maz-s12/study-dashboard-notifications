@@ -3,24 +3,23 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Link as RouterLink, u
 import { AuthProvider } from './contexts/AuthContext';
 import { Login } from './components/Login';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import {
-  ThemeProvider,
-  createTheme,
+import { 
+  ThemeProvider, 
+  createTheme, 
   Button,
   AppBar,
   Toolbar,
   Typography,
-  IconButton,
   Box,
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
+  IconButton,
+  Menu,
+  MenuItem,
   useMediaQuery,
   Link
 } from '@mui/material';
-import { Menu as MenuIcon, Settings as SettingsIcon, Logout as LogoutIcon } from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
+import MenuIcon from '@mui/icons-material/Menu';
+import SettingsIcon from '@mui/icons-material/Settings';
 import EmailReceivedTable from './pages/EmailReceivedTable';
 import PreScreenCompletedTable from './pages/PreScreenCompletedTable';
 import EligibleParticipantsTable from './pages/EligibleParticipantsTable';
@@ -29,28 +28,28 @@ import BookingsTable from './pages/BookingsTable';
 import SettingsPage from './pages/SettingsPage';
 import { useAuth } from './contexts/AuthContext';
 
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
-    },
-  },
-});
+const theme = createTheme();
 
-const navLinks = [
-  { text: 'Emails', path: '/email-received' },
-  { text: 'Surveys', path: '/pre-screen-completed' },
-  { text: 'Awaiting Booking', path: '/eligibility-confirmed' },
-  { text: 'Approve Bookings', path: '/booking-scheduled' },
-  { text: 'Bookings', path: '/bookings' },
-  { text: 'Settings', path: '/settings' },
-];
-
+// Navbar component
 const Navbar = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const muiTheme = useTheme();
+  const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    handleMenuClose();
+  };
 
   const handleLogout = async () => {
     try {
@@ -61,93 +60,87 @@ const Navbar = () => {
     }
   };
 
-  const handleDrawerToggle = () => {
-    setDrawerOpen(!drawerOpen);
-  };
-
-  const drawer = (
-    <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
-      <Typography variant="h6" sx={{ my: 2 }}>
-        Menu
-      </Typography>
-      <List>
-        {navLinks.map((link) => (
-          <ListItem key={link.text} disablePadding>
-            <ListItemButton component={RouterLink} to={link.path}>
-              <ListItemText primary={link.text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-    </Box>
-  );
+  const navLinks = [
+    { name: 'Emails', path: '/email-received' },
+    { name: 'Surveys', path: '/pre-screen-completed' },
+    { name: 'Awaiting Booking', path: '/eligibility-confirmed' },
+    { name: 'Approve Bookings', path: '/booking-scheduled' },
+    { name: 'Bookings', path: '/bookings' },
+  ];
 
   return (
-    <>
-      <AppBar position="static" color="default" elevation={1}>
-        <Toolbar>
-          {isMobile ? (
+    <AppBar position="static" color="default" elevation={1} sx={{ backgroundColor: 'white', mb: 4 }}>
+      <Toolbar>
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: 'primary.main', fontWeight: 'bold' }}>
+          Research Dashboard
+        </Typography>
+
+        {isMobile ? (
+          <>
             <IconButton
-              color="inherit"
-              aria-label="open drawer"
+              size="large"
               edge="start"
-              onClick={handleDrawerToggle}
-              sx={{ mr: 2 }}
+              color="inherit"
+              aria-label="menu"
+              onClick={handleMenuOpen}
             >
               <MenuIcon />
             </IconButton>
-          ) : (
-            <Box sx={{ display: 'flex', flexGrow: 1 }}>
+            <Menu
+              anchorEl={anchorEl}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+            >
               {navLinks.map((link) => (
-                <Link
-                  component={RouterLink}
-                  to={link.path}
-                  key={link.text}
-                  sx={{
-                    textDecoration: 'none',
-                    color: 'inherit',
-                    mr: 4,
-                    '&:hover': {
-                      color: 'primary.main',
-                    },
-                  }}
-                >
-                  {link.text}
-                </Link>
+                <MenuItem key={link.name} onClick={() => handleNavigate(link.path)}>
+                  {link.name}
+                </MenuItem>
               ))}
-            </Box>
-          )}
+            </Menu>
+          </>
+        ) : (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                component={RouterLink}
+                to={link.path}
+                variant="button"
+                sx={{
+                  color: 'text.primary',
+                  textDecoration: 'none',
+                  '&:hover': {
+                    color: 'primary.main',
+                  },
+                }}
+              >
+                {link.name}
+              </Link>
+            ))}
+          </Box>
+        )}
 
-          <Box sx={{ flexGrow: isMobile ? 1 : 0 }} />
+        <Box sx={{ flexGrow: isMobile ? 0 : 1 }} />
 
-          <IconButton
-            color="inherit"
-            component={RouterLink}
-            to="/settings"
-            aria-label="settings"
-          >
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <IconButton color="inherit" onClick={() => navigate('/settings')}>
             <SettingsIcon />
           </IconButton>
-          <IconButton color="inherit" onClick={handleLogout} aria-label="logout">
-            <LogoutIcon />
-          </IconButton>
-        </Toolbar>
-      </AppBar>
-      <Drawer
-        anchor="left"
-        open={drawerOpen}
-        onClose={handleDrawerToggle}
-        ModalProps={{
-          keepMounted: true, // Better open performance on mobile.
-        }}
-        sx={{
-          display: { xs: 'block', md: 'none' },
-          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 },
-        }}
-      >
-        {drawer}
-      </Drawer>
-    </>
+          <Button variant="outlined" color="primary" onClick={handleLogout} sx={{ ml: 1 }}>
+            Logout
+          </Button>
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 };
 
@@ -156,34 +149,71 @@ function App() {
     <ThemeProvider theme={theme}>
       <Router>
         <AuthProvider>
-          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-            <Routes>
-              {/* Public route */}
-              <Route path="/login" element={<Login />} />
+          <Routes>
+            {/* Public route */}
+            <Route path="/login" element={<Login />} />
 
-              {/* Protected routes */}
-              <Route
-                path="/*"
-                element={
-                  <ProtectedRoute>
-                    <Navbar />
-                    <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-                      <Routes>
-                        <Route path="/" element={<Navigate to="/email-received" replace />} />
-                        <Route path="/email-received" element={<EmailReceivedTable />} />
-                        <Route path="/pre-screen-completed" element={<PreScreenCompletedTable />} />
-                        <Route path="/eligibility-confirmed" element={<EligibleParticipantsTable />} />
-                        <Route path="/booking-scheduled" element={<BookingScheduledTable />} />
-                        <Route path="/bookings" element={<BookingsTable />} />
-                        <Route path="/settings" element={<SettingsPage />} />
-                        <Route path="*" element={<Navigate to="/email-received" replace />} />
-                      </Routes>
-                    </Box>
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
-          </Box>
+            {/* Protected routes */}
+            <Route path="/" element={<Navigate to="/email-received" replace />} />
+            
+            <Route
+              path="/email-received"
+              element={
+                <ProtectedRoute>
+                  <Navbar />
+                  <EmailReceivedTable />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/pre-screen-completed"
+              element={
+                <ProtectedRoute>
+                  <Navbar />
+                  <PreScreenCompletedTable />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/eligibility-confirmed"
+              element={
+                <ProtectedRoute>
+                  <Navbar />
+                  <EligibleParticipantsTable />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/booking-scheduled"
+              element={
+                <ProtectedRoute>
+                  <Navbar />
+                  <BookingScheduledTable />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/bookings"
+              element={
+                <ProtectedRoute>
+                  <Navbar />
+                  <BookingsTable />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <Navbar />
+                  <SettingsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Catch all route - redirect to email-received */}
+            <Route path="*" element={<Navigate to="/email-received" replace />} />
+          </Routes>
         </AuthProvider>
       </Router>
     </ThemeProvider>
