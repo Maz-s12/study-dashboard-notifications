@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, MoreVertical, Loader } from 'lucide-react';
+import { Calendar, Loader } from 'lucide-react';
 import { format } from 'date-fns';
-import { fetchWithAuth, API_BASE_URL } from '../utils/api';
+import { fetchWithAuth } from '../utils/api';
 
 const STATUS_OPTIONS = ['pending', 'approved', 'rejected'];
 
