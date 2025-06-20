@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Link as RouterLink, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { Login } from './components/Login';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -42,9 +42,7 @@ const useMenu = () => {
   const open = Boolean(anchorEl);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    if (event.currentTarget) {
-      setAnchorEl(event.currentTarget);
-    }
+    setAnchorEl(event.currentTarget);
   };
 
   const handleClose = () => {
@@ -60,17 +58,17 @@ const Navbar = () => {
   const navigate = useNavigate();
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
+  const location = useLocation();
   
   const mobileMenu = useMenu();
   const notificationsMenu = useMenu();
   const participantsMenu = useMenu();
 
   const handleNavigate = (path: string) => {
-    // Always close all menus before navigating
+    navigate(path);
     mobileMenu.handleClose();
     notificationsMenu.handleClose();
     participantsMenu.handleClose();
-    navigate(path);
   };
 
   const handleLogout = async () => {
@@ -105,6 +103,13 @@ const Navbar = () => {
     },
   ];
 
+  useEffect(() => {
+    notificationsMenu.handleClose();
+    participantsMenu.handleClose();
+    mobileMenu.handleClose();
+    // eslint-disable-next-line
+  }, [location.pathname]);
+
   const renderDesktopMenu = () => (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
       {navStructure.map((navItem) =>
@@ -132,7 +137,7 @@ const Navbar = () => {
             <Menu
               id={`${navItem.name}-menu`}
               anchorEl={navItem.menu.anchorEl}
-              open={Boolean(navItem.menu.anchorEl)}
+              open={navItem.menu.open}
               onClose={navItem.menu.handleClose}
               MenuListProps={{ 'aria-labelledby': 'basic-button' }}
             >
@@ -158,7 +163,7 @@ const Navbar = () => {
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         keepMounted
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        open={Boolean(mobileMenu.anchorEl)}
+        open={mobileMenu.open}
         onClose={mobileMenu.handleClose}
         PaperProps={{ style: { width: '250px' } }}
       >
