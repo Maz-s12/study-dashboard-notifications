@@ -116,7 +116,7 @@ export async function approveEmailNotification(id: number): Promise<Notification
             notificationId: notification.id,
             status: 'approved',
             timestamp: new Date().toISOString(),
-            template: 'approved_notification'
+            template: 'interested_participant'
           })
         });
         console.log('Approval email sent.');
