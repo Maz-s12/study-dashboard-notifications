@@ -19,6 +19,7 @@ import {
   Grid
 } from '@mui/material';
 import { CloudUpload, Storage, Info, CheckCircle, Error } from '@mui/icons-material';
+import { fetchWithAuth } from '../utils/api';
 
 interface DatabaseInfo {
   exists: boolean;
@@ -47,20 +48,18 @@ const SettingsPage: React.FC = () => {
   const fetchDatabaseInfo = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/settings/database-info', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await fetchWithAuth('/api/settings/database-info');
       
       if (response.ok) {
         const data = await response.json();
         setDatabaseInfo(data);
       } else {
         console.error('Failed to fetch database info');
+        setMessage({ type: 'error', text: 'Could not load database information. Please try again.' });
       }
     } catch (error) {
       console.error('Error fetching database info:', error);
+      setMessage({ type: 'error', text: 'An unexpected error occurred.' });
     } finally {
       setLoading(false);
     }
@@ -92,12 +91,9 @@ const SettingsPage: React.FC = () => {
       const formData = new FormData();
       formData.append('database', selectedFile);
 
-      const response = await fetch('/api/settings/upload-database', {
+      const response = await fetchWithAuth('/api/settings/upload-database', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: formData
+        body: formData,
       });
 
       const data = await response.json();
