@@ -115,7 +115,7 @@ const Navbar = () => {
           >
             {navItem.name}
           </Link>
-        ) : (
+        ) : navItem.menu ? (
           <React.Fragment key={navItem.name}>
             <Button
               aria-controls={`${navItem.name}-menu`}
@@ -140,7 +140,7 @@ const Navbar = () => {
               ))}
             </Menu>
           </React.Fragment>
-        )
+        ) : null
       )}
     </Box>
   );
