@@ -20,7 +20,6 @@ import {
   ListItem,
   ListItemText,
   ListSubheader,
-  Divider,
   ListItemButton
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
