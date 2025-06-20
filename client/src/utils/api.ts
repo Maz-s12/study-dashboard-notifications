@@ -1,6 +1,8 @@
 import { auth } from '../config/firebase';
 
-export const API_BASE_URL = 'http://localhost:5000';
+export const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? '' 
+  : 'http://localhost:5000';
 
 export async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
   try {
