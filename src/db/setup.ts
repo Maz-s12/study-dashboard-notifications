@@ -2,11 +2,14 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 
-// Get the absolute path to the database file
-const dbPath = path.resolve(__dirname, '../../data/study.db');
+// Define the database path based on the environment
+const dataDir = process.env.NODE_ENV === 'production' 
+  ? '/data' 
+  : path.resolve(__dirname, '../../data');
+
+const dbPath = path.join(dataDir, 'study.db');
 
 // Ensure the data directory exists
-const dataDir = path.dirname(dbPath);
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
