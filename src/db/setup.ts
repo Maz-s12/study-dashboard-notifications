@@ -22,20 +22,19 @@ const db = new Database(dbPath);
 db.pragma('foreign_keys = ON');
 
 try {
-  // Create notifications table with email-specific fields
+  // Create emails table with email-specific fields
   db.exec(`
-    CREATE TABLE IF NOT EXISTS notifications (
+    CREATE TABLE IF NOT EXISTS emails (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       type TEXT NOT NULL,
-      email TEXT NOT NULL,
+      email_address TEXT NOT NULL,
       timestamp TEXT NOT NULL,
       status TEXT NOT NULL,
       email_subject TEXT,
-      email_body TEXT,
-      data TEXT
+      email_body TEXT
     )
   `);
-  console.log('Notifications table created/verified');
+  console.log('Emails table created/verified');
 
   // Create participants table
   db.exec(`
@@ -74,9 +73,9 @@ try {
   `);
   console.log('Bookings table created/verified');
 
-  // Debug: List all notifications
-  const notifications = db.prepare('SELECT * FROM notifications').all();
-  console.log('Current notifications in database:', notifications);
+  // Debug: List all emails
+  const emails = db.prepare('SELECT * FROM emails').all();
+  console.log('Current emails in database:', emails);
 
 } catch (error) {
   console.error('Error setting up database:', error);
