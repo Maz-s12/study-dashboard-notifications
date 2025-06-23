@@ -1,100 +1,9 @@
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import Box from '@mui/material/Box';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-
-interface BusinessUnit {
-  id: string;
-  name: string;
-  businessUnit: string;
-}
-
-interface BusinessUnitSelectorProps {
-  businessUnits: BusinessUnit[];
-  selectedValues: string[];
-  selectedBUS: string[];
-  onSelectionChange: (selectedNames: string[], selectedIds: string[]) => void;
-}
-
-const BusinessUnitSelector: React.FC<BusinessUnitSelectorProps> = ({
-  businessUnits,
-  selectedValues,
-  selectedBUS,
-  onSelectionChange
-}) => {
-  const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      // Select all
-      const allNames = businessUnits.map(bu => bu.name);
-      const allIds = businessUnits.map(bu => bu.businessUnit);
-      onSelectionChange(allNames, allIds);
-    } else {
-      // Deselect all
-      onSelectionChange([], []);
-    }
-  };
-
-  const handleIndividualChange = (businessUnit: BusinessUnit) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      // Add to selection
-      const newSelectedNames = [...selectedValues, businessUnit.name];
-      const newSelectedIds = [...selectedBUS, businessUnit.businessUnit];
-      onSelectionChange(newSelectedNames, newSelectedIds);
-    } else {
-      // Remove from selection
-      const newSelectedNames = selectedValues.filter(v => v !== businessUnit.name);
-      const newSelectedIds = selectedBUS.filter(v => v !== businessUnit.businessUnit);
-      onSelectionChange(newSelectedNames, newSelectedIds);
-    }
-  };
-
-  const allSelected = businessUnits.length > 0 && selectedValues.length === businessUnits.length;
-  const someSelected = selectedValues.length > 0 && selectedValues.length < businessUnits.length;
-
-  if (businessUnits.length === 0) {
-    return (
-      <Typography variant="body2" color="text.secondary">
-        No business units available
-      </Typography>
-    );
-  }
-
-  return (
-    <Box>
-      {/* Select All Checkbox */}
-      <FormControlLabel
-        label="Select All"
-        control={
-          <Checkbox
-            checked={allSelected}
-            indeterminate={someSelected}
-            onChange={handleSelectAll}
-          />
-        }
-      />
-      
-      {/* Individual Business Unit Checkboxes */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', ml: 3 }}>
-        {businessUnits.map((businessUnit) => (
-          <FormControlLabel
-            key={businessUnit.id}
-            label={businessUnit.name}
-            control={
-              <Checkbox
-                checked={selectedValues.includes(businessUnit.name)}
-                onChange={handleIndividualChange(businessUnit)}
-              />
-            }
-          />
-        ))}
-      </Box>
-    </Box>
-  );
-};
+import BusinessUnitSelector, { BusinessUnit, BusinessUnitSelectorProps } from './BusinessUnitSelector';
 
 export class BusinessUnitComboBox implements ComponentFramework.StandardControl<IInputs, IOutputs> {
   private container: HTMLDivElement;
@@ -117,6 +26,14 @@ export class BusinessUnitComboBox implements ComponentFramework.StandardControl<
     this.notifyOutputChanged = notifyOutputChanged;
     this.container = container;
     this.context = context;
+
+    // Initialize selected values from state if available
+    if (state && state.selectedValues) {
+      this.selectedValues = JSON.parse(state.selectedValues as string) || [];
+    }
+    if (state && state.selectedBUS) {
+      this.selectedBUS = JSON.parse(state.selectedBUS as string) || [];
+    }
   }
 
   public updateView(context: ComponentFramework.Context<IInputs>): void {
@@ -156,13 +73,27 @@ export class BusinessUnitComboBox implements ComponentFramework.StandardControl<
     ReactDOM.unmountComponentAtNode(this.container);
   }
 
+  /**
+   * Called by the framework to retrieve the current state of the control
+   * @param context The current context
+   * @returns The state of the control
+   */
+  public getState(context: ComponentFramework.Context<IInputs>): ComponentFramework.Dictionary {
+    return {
+      selectedValues: JSON.stringify(this.selectedValues),
+      selectedBUS: JSON.stringify(this.selectedBUS)
+    };
+  }
+
   private renderMessage(message: string): void {
-    const messageComponent = (
-      <ThemeProvider theme={this.theme}>
-        <Typography variant="body2" color="text.secondary">
-          {message}
-        </Typography>
-      </ThemeProvider>
+    const messageComponent = React.createElement(
+      ThemeProvider,
+      { theme: this.theme },
+      React.createElement(
+        Typography,
+        { variant: "body2", color: "text.secondary" },
+        message
+      )
     );
     
     ReactDOM.render(messageComponent, this.container);
@@ -177,15 +108,17 @@ export class BusinessUnitComboBox implements ComponentFramework.StandardControl<
       this.notifyOutputChanged();
     };
 
-    const component = (
-      <ThemeProvider theme={this.theme}>
-        <BusinessUnitSelector
-          businessUnits={businessUnits}
-          selectedValues={this.selectedValues}
-          selectedBUS={this.selectedBUS}
-          onSelectionChange={handleSelectionChange}
-        />
-      </ThemeProvider>
+    const businessUnitSelectorProps: BusinessUnitSelectorProps = {
+      businessUnits: businessUnits,
+      selectedValues: this.selectedValues,
+      selectedBUS: this.selectedBUS,
+      onSelectionChange: handleSelectionChange
+    };
+
+    const component = React.createElement(
+      ThemeProvider,
+      { theme: this.theme },
+      React.createElement(BusinessUnitSelector, businessUnitSelectorProps)
     );
 
     ReactDOM.render(component, this.container);
